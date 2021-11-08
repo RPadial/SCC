@@ -19,27 +19,16 @@ from skimage import data
 from skimage import filters
 from skimage import exposure
 from skimage import measure
-
-
+##########################################################################################
+#                                         DEFINES                                        #
+##########################################################################################
+# Sobel-Feldman operator
 K = np.array([  [47, 0, -47],
                 [162, 0, -162], 
                 [47, 0, -47]
-            ])  # Sobel-Feldman operator
-            
-'''
+            ])
 
-
-K = np.array([  [-47, 0, 47],
-                [-162, 0, 162], 
-                [-47, 0, 47]
-            ])  # Sobel-Feldman operator
-'''
-'''
-K = np.array([[ -3-3j, 0-10j,  +3 -3j],
-                   [-10+0j, 0+ 0j, +10 +0j],
-                    [ -3+3j, 0+10j,  +3 +3j]]) # Gx + j*Gy
-
-'''
+# 
 u = np.array([1, 2, 1])
 
 '''
@@ -58,27 +47,45 @@ R2=8400;
 
 M=80
 N=60
-###################################################################################
+##########################################################################################
+#                                       END DEFINES                                      #
+##########################################################################################
+
+##########################################################################################
+# OpenFile: Open 'finput' .bin file packaged and return a list 'L'. Data packaged is 
+#           unsigned-sorts little-endian.
+# Parameters:
+# - finput: input file.
+# Return:
+# - L: List with with the filedata.
+##########################################################################################
 
 def OpenFile(finput):
-    # Open 'finput' .bin file packaged and return a list 'L'. Data packaged is unsigned-sorts little-endian
     #reading unsigned shorts 'tuple'??
     with open(finput, "rb") as fid:
         #Max = struct.unpack('H', fid.read(2))         # <little-endian
         L = list(struct.iter_unpack('<H', fid.read()))
         L = np.asarray(L)                              # tuple to array
         L = np.reshape(L,L.shape[0],'C')
+
     return L
 
-
-def List2Im(L, N=N, M=M, f=3):
-    # L: List of data
-    # N: number of rows
-    # M: number of columns
-    # f: first data component of the image. 
-    #Word 1: Minimum value of the scene
-    #Word 2: Maximum value of the scene
-    #The rest are 80x60 unsigned shorts, listed by row then column
+##########################################################################################
+# List2Im: Creates an image (array) NxM from a list of data with an offset 'f'. L=N*M+f.
+# Parameters:
+# - L: List of data.
+# - N: number of rows.
+# - M: number of columns.
+# - f: first data component of the image.
+# Return:
+# - IM: NxM array.
+# About IR camera data:
+# Word 1: Minimum value of the scene.
+# Word 2: Maximum value of the scene.
+# The rest are 80x60 unsigned shorts, listed by row then column. Offset 'f' default value 
+# is set to '3'.
+##########################################################################################
+def List2Im(L, N=N, M=M, f=3):    
     k=f-1
 
     IM = np.zeros((N,M))
@@ -88,13 +95,38 @@ def List2Im(L, N=N, M=M, f=3):
 
     return IM
 
-
+##########################################################################################
+# GetImage: Creates an image (array) NxM from 'finput' file.
+# Parameters:
+# - finput: input file.
+# - N: number of rows.
+# - M: number of columns.
+# - f: first data component of the image.
+# Return:
+# - IM: NxM array.
+# About IR camera data:
+# Word 1: Minimum value of the scene.
+# Word 2: Maximum value of the scene.
+# The rest are 80x60 unsigned shorts, listed by row then column. Offset 'f' default value 
+# is set to '3'.
+##########################################################################################
 def GetImage(finput, N=N, M=M, f=3):
     # Return a Image as a matrix MxN from finput
     IM = List2Im(OpenFile(finput), N, M, f)
     return IM
 
-
+##########################################################################################
+# GetImage2: Creates an image (array) NxM from 'finput' file.
+# Parameters:
+# - finput: input file.
+# Return:
+# - IM: NxM array.
+# About IR camera data:
+# Word 1: Minimum value of the scene.
+# Word 2: Maximum value of the scene.
+# The rest are 80x60 unsigned shorts, listed by row then column. Offset 'f' default value 
+# is set to '3'.
+##########################################################################################
 def GetImage2(finput):
     A = OpenFile(finput)
     Max = A[0]
@@ -115,8 +147,22 @@ def GetImage2(finput):
     return IM
     
 
-def IM (A, N=N, M=M, f=3):
-    
+##########################################################################################
+# IM: Converts infrarred data into temperature.
+# Parameters:
+# - A: input file.
+# - N: number of rows.
+# - M: number of columns.
+# - f: first data component of the image.
+# Return:
+# - IM: NxM temperature array.
+# About IR camera data:
+# Word 1: Minimum value of the scene.
+# Word 2: Maximum value of the scene.
+# The rest are 80x60 unsigned shorts, listed by row then column. Offset 'f' default value 
+# is set to '3'.
+##########################################################################################
+def IM (A, N=N, M=M, f=3):    
     IM = List2Im(A, N, M, f)    
             
     #Now we use the the measured temperature in two body spots to callibrate the sensor
@@ -125,11 +171,25 @@ def IM (A, N=N, M=M, f=3):
 
     IM=IM*a+b
 
-
     #MinVal = math.floor(np.amin(IM))
     #MaxVal = math.ceil(np.amax(IM))
     return IM
 
+
+##########################################################################################
+# IM2: Converts infrarred data into temperature. (Not used)
+# Parameters:
+# - A: input file.
+# - N: number of rows.
+# - M: number of columns.
+# Return:
+# - IM: NxM temperature array.
+# About IR camera data:
+# Word 1: Minimum value of the scene.
+# Word 2: Maximum value of the scene.
+# The rest are 80x60 unsigned shorts, listed by row then column. Offset 'f' default value 
+# is set to '3'.
+##########################################################################################
 def IM2 (A, M=M, N=N):
     
     Max = A[0]
@@ -153,10 +213,18 @@ def IM2 (A, M=M, N=N):
     MaxVal = math.ceil(np.amax(IM))
     return IM
 
+##########################################################################################
+# I2Ter: Transform image IM pixel values to temperature values in ºC. (Not used)
+# Parameters:
+# - IM: Temperature image [ºC]
+# - T1: Temperature in calibration spot 1. 
+# - T2: Temperature in calibration spot 2. 
+# - R1: IR value in calibration spot 1. 
+# - R1: IR value in calibration spot 2. 
+# Return:
+# - TerIM: Temperature image [ºC]
+##########################################################################################
 def Im2Ter (IM, T1=T1, T2=T2, R1=R1, R2=R2):
-    
-    # Transform image IM pixel values to temperature values in ºC
-
     N = IM.shape[0]  # number of rows
     M = IM.shape[1]  # number of columns
     TerIM = np.zeros((N,M))
@@ -170,8 +238,15 @@ def Im2Ter (IM, T1=T1, T2=T2, R1=R1, R2=R2):
     #MaxVal = math.ceil(np.amax(IM))
     return TerIM
 
+##########################################################################################
+# SF: Filters temperature image with Sobel-Feldman kernel
+# Parameters:
+# - TerIM: Temperature image [ºC]
+# - Kernel: Kernel to filter image. Default value 'K'.
+# Return:
+# - G: Image filtered.  
+##########################################################################################
 def SF(TerIM, Kernel=K):
-
     MK = K.shape[0]  # number of rows
     NK = K.shape[1]  # number of columns
 
@@ -211,31 +286,31 @@ def SF(TerIM, Kernel=K):
 
     return G
 
+##########################################################################################
+#SOBELKERNEL returns sobel kernel
+#   KERNEL=SOBELKERNEL(SIZE) Returns Sobel filter of predefined size.
+#
+#   KERNEL=SOBELKERNEL(SIZE, 'NORMALISED') The Sobel matrix should be
+#   normalised if proper derivative estimator is required.
+#
+#   [KERNEL, S, D]=SOBELKERNEL(SIZE, 'NORMALISED') Returns also smoothing S
+#   and derivative D components individually. The kernel is then a
+#   multiplication of these two vectors: S'*D. This can be usefull for
+#   convolution acceleration via separable kernels as illustrated at:
+#       http://blogs.mathworks.com/steve/2006/10/04/separable-convolution/
+#   
+#   Example
+#   -------
+#       sobelkernel(4)
+#
+#   See also IMFILTER, FSPECIAL.
+#   Contributed by Jan Motl (jan@motl.us)
+#   $Revision: 1.1 $  $Date: 2013/02/13 16:58:01 $
+#   For method description see:
+#       http://stackoverflow.com/questions/9567882/sobel-filter-kernel-of-large-size
+# Parameter checking.
+##########################################################################################
 def sobelkernel(size, varargin=[]):
-    #SOBELKERNEL returns sobel kernel
-    #   KERNEL=SOBELKERNEL(SIZE) Returns Sobel filter of predefined size.
-    #
-    #   KERNEL=SOBELKERNEL(SIZE, 'NORMALISED') The Sobel matrix should be
-    #   normalised if proper derivative estimator is required.
-    #
-    #   [KERNEL, S, D]=SOBELKERNEL(SIZE, 'NORMALISED') Returns also smoothing S
-    #   and derivative D components individually. The kernel is then a
-    #   multiplication of these two vectors: S'*D. This can be usefull for
-    #   convolution acceleration via separable kernels as illustrated at:
-    #       http://blogs.mathworks.com/steve/2006/10/04/separable-convolution/
-    #   
-    #   Example
-    #   -------
-    #       sobelkernel(4)
-    #
-    #   See also IMFILTER, FSPECIAL.
-    #   Contributed by Jan Motl (jan@motl.us)
-    #   $Revision: 1.1 $  $Date: 2013/02/13 16:58:01 $
-    #   For method description see:
-    #       http://stackoverflow.com/questions/9567882/sobel-filter-kernel-of-large-size
-    # Parameter checking.
-
-
     # Parameter checking.
     if (len(varargin)!=0) and (varargin == 'normalise'):
         normalisation = 1/8
@@ -260,8 +335,15 @@ def sobelkernel(size, varargin=[]):
     
     return kernel
 
-def Otsu (IM, thr="lower"):
-    
+##########################################################################################
+# Otsu: Otsu method for image segmentation
+# Parameters:
+# - IM: orginal image
+# - thr: threshold 'lower'/'upper' remove value below/upper the threshold.
+# Return:
+# - IMOtsu: Image segmented.  
+##########################################################################################
+def Otsu (IM, thr="lower"):    
     val = filters.threshold_otsu(IM)
     #hist, bins_center = exposure.histogram(IM)
     N = IM.shape[0]  # number of rows
@@ -272,8 +354,7 @@ def Otsu (IM, thr="lower"):
     MinVal = math.floor(np.amin(IM))
     MaxVal = math.ceil(np.amax(IM))
     
-    if (thr == "lower"):
-        
+    if (thr == "lower"):        
         for i in range(0,N):
             for j in range(0,M):
                 if (IMOtsu[i,j]<val):
@@ -304,10 +385,15 @@ def StartIsocurve(x, y, Tittle, ColorMap):
     win2.resize(x,y)
     return vb'''
 
-
+##########################################################################################
+# CoordinateMethods: Area  calculation with cordinatemethos
+# Parameters:
+# - xi: array with x coordinates of a isocurve
+# - yi: array with y coordinates of a isocurve
+# Return:
+# - Area: area behind the curve.  
+##########################################################################################
 def CoordinateMethods(xi, yi):
-    #xi: array with x coordinates of a isocurve
-    #yi: array with y coordinates of a isocurve
     S1 = xi[1]*yi[1+1]
     S2 = xi[1+1]*yi[1]
     for i in range (0, xi.shape[0]-1):
@@ -318,6 +404,14 @@ def CoordinateMethods(xi, yi):
 
     return Area
 
+##########################################################################################
+# SiftingArea: Select the array with the maximum number of elements. Filter the greatest 
+#              area
+# Parameters:
+# - Arrays: Array with coodinates
+# Return:
+# - max_index: index of the larger array.
+##########################################################################################
 def SiftingArea(Arrays):
     size_Arrays = np.shape(Arrays)
     #print('shape = ', size_Arrays[0])
@@ -332,6 +426,17 @@ def SiftingArea(Arrays):
     np.reshape(max_index,max_index.shape[0],'C')
     return int(max_index)
 
+##########################################################################################
+# ReqArea: Calculate the area behind a temperature line. 
+# Parameters:
+# - IM: Temperetature image array. 
+# - level: Number of levels to be plotted. 
+# - AreaType: Default Value = 'sum'.
+# -- 'sum' caculates de sum of all the areas.
+# -- 'greater' calculates the area of the grater region. 
+# Return:
+# - Area: Number of pixels with level temperature or greater. 
+##########################################################################################
 def ReqArea(IM, level, AreaType='sum'):
     Area = 0
     if (level < np.amin(IM) or level > np.amax(IM)):
@@ -351,10 +456,18 @@ def ReqArea(IM, level, AreaType='sum'):
             SiftingArea(ContourCordinates)
             A = ContourCordinates[SiftingArea(ContourCordinates)]
             Area = CoordinateMethods(A[:,1], A[:,0])
-
         
         return Area
 
+##########################################################################################
+# PlotIsocurve: Plots nlevels isocurves from min to max value. 
+# Parameters:
+# - IM: Temperetature image array. 
+# - nlevels: Number of levels to be plotted. 
+# - ShowImage: 'Tue' plots grey image below isocurves. Default Value = 'False".
+# Return:
+# - Nothing
+##########################################################################################
 def  PlotIsocurve(IM, nlevels, ShowImage = 'False'):
     global fig
 
@@ -371,10 +484,28 @@ def  PlotIsocurve(IM, nlevels, ShowImage = 'False'):
 
     plt.show()
 
-def CloseIsocurves(Fig):
-    
+##########################################################################################
+# CloseIsocurves: Close isocurves figure.
+# Parameters:
+# - Fig: Figure ID. 
+# Return:
+# - Nothing
+##########################################################################################
+def CloseIsocurves(Fig):    
     plt.close(Fig)
 
+##########################################################################################
+# PlotRegion: Plots contour line.
+# Parameters:
+# - IM: Temperature image array.
+# - level: Temperature to be plotted. 
+# - ShowImage: Default value = 'False'.
+# - AreaType: DefaultValue 'sum'
+# -- "sum" all the areas. 
+# -- "greater" grater region. 
+# Return:
+# - Nothing
+##########################################################################################
 def PlotRegion(IM, level, ShowImage = 'False', AreaType='sum'):
     global figure
     contours = measure.find_contours(IM, level)
@@ -389,9 +520,7 @@ def PlotRegion(IM, level, ShowImage = 'False', AreaType='sum'):
             ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
     elif (AreaType=="greater"):
         contours = contours[(SiftingArea(contours))]
-        ax.plot(contours[:, 1], contours[:, 0], linewidth=2)
-
-    
+        ax.plot(contours[:, 1], contours[:, 0], linewidth=2)    
 
     ax.axis('image')
     ax.set_xticks([])
