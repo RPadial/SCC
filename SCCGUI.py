@@ -63,12 +63,12 @@ class Ui_MainWindow(object):
         self.labelC.setObjectName("label")
         self.horizontalLayout.addWidget(self.labelC)
 
-        self.TempBtn = QtGui.QPushButton('Show Temperature')
+        self.TempBtn = QtWidgets.QPushButton('Show Temperature')
         self.TempBtn.setObjectName("TempBtn")
         self.TempBtn.setCheckable(True)
         self.horizontalLayout.addWidget(self.TempBtn)
 
-        self.AreaBtn = QtGui.QPushButton('Update Area')
+        self.AreaBtn = QtWidgets.QPushButton('Update Area')
         self.AreaBtn.setObjectName("AreaBtn")
         self.AreaBtn.setCheckable(False)
         self.AreaBtn.setEnabled(False)
@@ -94,7 +94,7 @@ class Ui_MainWindow(object):
         self.labelAreaValue.setObjectName("labelAreaValue")
         self.horizontalLayout_2.addWidget(self.labelAreaValue)
 
-        self.Showbtn = QtGui.QPushButton('Show Area')
+        self.Showbtn = QtWidgets.QPushButton('Show Area')
         self.Showbtn.setObjectName("Showbtn")
         self.Showbtn.setCheckable(True)
         self.horizontalLayout_2.addWidget(self.Showbtn)

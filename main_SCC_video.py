@@ -11,7 +11,7 @@
 
 import numpy as np
 import pyqtgraph as pg
-from PyQt5 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 import SCCGUI
 
 import MyColorMaps
@@ -21,8 +21,8 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
-path = "/home/pi/Documents/rubpadall/SCC/Secuencia de video/"
-#path = "G:/Mi unidad/Máster/TFM/08 - Secuencia de video/"
+#path = "/home/pi/Documents/rubpadall/SCC/Secuencia de video/"
+path = "C:/Users/Ruben/Documents/Python/SCC_GIT/Secuencia de video/"
 file = np.array(["raw54.bin", "raw55.bin", "raw56.bin", "raw57.bin", "raw58.bin", "raw59.bin", "raw60.bin", "raw61.bin", "raw62.bin", "raw63.bin", 
                 "raw64.bin", "raw65.bin", "raw66.bin", "raw67.bin", "raw68.bin", "raw69.bin",  "raw70.bin", "raw71.bin"])
 '''
@@ -41,9 +41,9 @@ cmap = plt.get_cmap(ColorMap)
 
 pg.setConfigOptions(imageAxisOrder='row-major')
 
-app = QtGui.QApplication([])
+app = QtWidgets.QApplication([])
 
-win = QtGui.QMainWindow()
+win = QtWidgets.QMainWindow()
 win.setWindowTitle('SCC')
 ui = SCCGUI.Ui_MainWindow()
 ui.setupUi(win)
