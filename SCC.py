@@ -413,7 +413,7 @@ def CoordinateMethods(xi, yi):
 # - max_index: index of the larger array.
 ##########################################################################################
 def SiftingArea(Arrays):
-    size_Arrays = np.shape(Arrays)
+    size_Arrays = np.array(np.shape(Arrays), dtype="object")
     #print('shape = ', size_Arrays[0])
     n_Arrays = np.zeros(size_Arrays[0])
 
@@ -442,7 +442,7 @@ def ReqArea(IM, level, AreaType='sum'):
     if (level < np.amin(IM) or level > np.amax(IM)):
         return 0
     else:
-        ContourCordinates = measure.find_contours(IM, level) #Retunrs (row, column) array
+        ContourCordinates = np.array(measure.find_contours(IM, level), dtype="object") #Retunrs (row, column) array
         #↨ContourCordinates = ContourCordinates[(SiftingArea(ContourCordinates))]
         size_contour = np.shape(ContourCordinates)
         CC = np.zeros(size_contour[0])
@@ -508,12 +508,11 @@ def CloseIsocurves(Fig):
 ##########################################################################################
 def PlotRegion(IM, level, ShowImage = 'False', AreaType='sum'):
     global figure
-    contours = measure.find_contours(IM, level)
+    contours = np.array(measure.find_contours(IM, level), dtype="object")
     # Display the image and plot all contours found
     figure, ax = plt.subplots()
     if ShowImage == 'True':
         ax.imshow(IM, cmap=plt.cm.gray)
-
 
     if (AreaType=="sum"):
         for n, contour in enumerate(contours):
