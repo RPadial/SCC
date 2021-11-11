@@ -12,6 +12,7 @@
 import numpy as np
 import pyqtgraph as pg
 from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5.QtCore import QTimer
 import SCCGUI
 
 import MyColorMaps
@@ -20,9 +21,10 @@ import SCC
 import time
 import numpy as np
 import matplotlib.pyplot as plt
+import sys
 
-#path = "/home/pi/Documents/rubpadall/SCC/Secuencia de video/"
-path = "C:/Users/Ruben/Documents/Python/SCC_GIT/Secuencia de video/"
+path = "/home/pi/Documents/rubpadall/SCC/Secuencia de video/"
+#path = "C:/Users/Ruben/Documents/Python/SCC/Secuencia de video/"
 file = np.array(["raw54.bin", "raw55.bin", "raw56.bin", "raw57.bin", "raw58.bin", "raw59.bin", "raw60.bin", "raw61.bin", "raw62.bin", "raw63.bin", 
                 "raw64.bin", "raw65.bin", "raw66.bin", "raw67.bin", "raw68.bin", "raw69.bin",  "raw70.bin", "raw71.bin"])
 '''
@@ -30,7 +32,9 @@ file = np.array(["raw54.bin", "raw55.bin", "raw56.bin", "raw57.bin", "raw58.bin"
 path = "G:/Mi unidad/Máster/TFM/07 - Imágenes/20200802/"
 file = "raw69_1session.bin"
 '''
-
+##########################################################################################
+#                                         DEFINES                                        #
+##########################################################################################
 
 M=80
 N=60
@@ -39,47 +43,50 @@ nlevels = 10    # number of isocureves
 ColorMap = "flag"
 cmap = plt.get_cmap(ColorMap)
 
-pg.setConfigOptions(imageAxisOrder='row-major')
+##########################################################################################
+#                                       END DEFINES                                      #
+##########################################################################################
 
-app = QtWidgets.QApplication([])
-
-win = QtWidgets.QMainWindow()
-win.setWindowTitle('SCC')
-ui = SCCGUI.Ui_MainWindow()
-ui.setupUi(win)
-win.show()
+def defineGraphicsLayout():
+	global win2, vb, vb2, vb3, imv1, imv2, imv3
+	pg.setConfigOptions(imageAxisOrder='row-major')	
 
 
-win2 = pg.GraphicsLayout()
-win2.resize(900,350)
+	#GraphicsLayout (win2) with 3 ViewBox:
+	# - vb1: IR image
+	# - vb2: Temperature gradient
+	# - vb3: Isocurves
+	win2 = pg.GraphicsLayout()
+	win2.resize(900,350)
 
-vb = win2.addViewBox()
-vb2 = win2.addViewBox()
-vb3 = win2.addViewBox()
+	vb = win2.addViewBox()
+	vb2 = win2.addViewBox()
+	vb3 = win2.addViewBox()
 
-ui.graphicsView.setCentralItem(win2)
-ui.graphicsView.resize(900,350)
-#TypeError: addItem(self, QGraphicsItem): argument 1 has unexpected type 'GraphicsLayoutWidget'
+	ui.graphicsView.setCentralItem(win2)
+	ui.graphicsView.resize(400,350)
+	#TypeError: addItem(self, QGraphicsItem): argument 1 has unexpected type 'GraphicsLayoutWidget'
 
-vb.setAspectLocked()
-imv1 = pg.ImageItem()
-imv1.setLookupTable(MyColorMaps.JetLUT, update=True)
-vb.addItem(imv1)
+	#ImageItem imv1 addet to ViewBox vb
+	vb.setAspectLocked()
+	imv1 = pg.ImageItem()
+	imv1.setLookupTable(MyColorMaps.JetLUT, update=True)
+	vb.addItem(imv1)
 
-vb2.setAspectLocked()
-imv2 = pg.ImageItem()
-imv2.setLookupTable(MyColorMaps.PinkLUT, update=True)
-vb2.addItem(imv2)
+	#ImageItem imv2 addet to ViewBox vb2
+	vb2.setAspectLocked()
+	imv2 = pg.ImageItem()
+	imv2.setLookupTable(MyColorMaps.PinkLUT, update=True)
+	vb2.addItem(imv2)
 
-vb3.setAspectLocked()
-imv3 = pg.ImageItem()
-vb3.addItem(imv3)
+	#ImageItem imv3 addet to ViewBox vb3
+	vb3.setAspectLocked()
+	imv3 = pg.ImageItem()
+	vb3.addItem(imv3)
 
 
 def SetIsocurve(IM):
-    global img, levels, curves, c, init_flag
-    #img = pg.ImageItem(IM)
-    
+    global img, levels, curves, c, init_flag    
   
     ## generate empty curves
     curves = []
@@ -87,24 +94,23 @@ def SetIsocurve(IM):
 
     for i in range(len(levels)):
         v = levels[i]
-        ## generate isocurve with cmap color selection
+        # generate isocurve with cmap color selection
         pg_cmap = tuple(int(255*x) for x in cmap(i))
         pg_pen = pg.mkPen(pg_cmap)
         c = pg.IsocurveItem(level=v, pen=pg_pen)
         #c = pg.IsocurveItem(level=v, pen=(i, len(levels)*1.5))
-        c.setParentItem(imv3)  ## make sure isocurve is always correctly displayed over image
+        c.setParentItem(imv3)  # make sure isocurve is always correctly displayed over image
         curves.append(c)
     init_flag = 0
 
-        #imgLevels = (IM.min(), IM.max())
-
-        #imv3.setImage(IM, levels=imgLevels)
-        #c.setData(IM)
-
-
 def UpdateIM():
-    global IMSeg
+    global IMSeg, i
 
+    finput = path + file[i]    
+    A = SCC.OpenFile(finput)
+    i=i+1
+    if (i==file.shape[0]-1):
+    	i=0 
 
     IM = SCC.IM(A, N, M)
     B = SCC.SF(IM)
@@ -121,10 +127,7 @@ def UpdateIM():
     for c in curves:
         c.setData(IMSeg)
 
-
-    #QtGui.QApplication.processEvents()
     app.processEvents()
-
 
 def buttonAction():
     global IMAnalysis, TempValue, ok
@@ -162,38 +165,37 @@ def ShowArea():
     else:
          ui.Showbtn.setText("Show Area")
          SCC.CloseIsocurves(SCC.figure)
-    
 
+def setButtonsAction(): 	
+ 	ui.TempBtn.clicked.connect(buttonAction)
+ 	ui.AreaBtn.clicked.connect(AskTemperature)
+ 	ui.Showbtn.clicked.connect(ShowArea)
 
-ui.TempBtn.clicked.connect(buttonAction)
-ui.AreaBtn.clicked.connect(AskTemperature)
-ui.Showbtn.clicked.connect(ShowArea)
+def setTimer():
+	global timer
 
-
-i=0
+	timer = QtCore.QTimer()
+	timer.timeout.connect(UpdateIM)
+	timer.start(0)
+	
+i = 0
 init_flag = 1
-#ttotal = time.time()
-while i<file.shape[0]:
-    finput = path + file[i]
-    A = SCC.OpenFile(finput)
-    
-    UpdateIM()
-    
-    i=i+1
-    
-    if (i==file.shape[0]-1) :
-        i=0
-    
-    
 
-#print('tiempo total = ', time.time() - ttotal)
+if __name__ == "__main__":
+	# Construc app https://doc.qt.io/qtforpython/PySide6/QtWidgets/QApplication.html
+	app = QtWidgets.QApplication([]) 
+	# https://doc.qt.io/qtforpython/PySide6/QtWidgets/QMainWindow.html
+	ui = SCCGUI.Ui_MainWindow()
+	win = QtWidgets.QMainWindow()
+	win.setWindowTitle('SCC')
 
+	#Create the widgets inside the window
+	ui.setupUi(win) 				
+	win.show()
 
+	defineGraphicsLayout()
+	setButtonsAction()
+	setTimer()	
 
-## Start Qt event loop unless running in interactive mode or using pyside.
-if __name__ == '__main__':
-    import sys
-    if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-        QtGui.QApplication.instance().exec_()
+	sys.exit(app.exec_())
 
-#Temp = ui.TempSpin.value()
