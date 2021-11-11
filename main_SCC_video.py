@@ -48,7 +48,7 @@ cmap = plt.get_cmap(ColorMap)
 ##########################################################################################
 
 def defineGraphicsLayout():
-	global win2, vb, vb2, vb3, imv1, imv2, imv3
+	global win2, vb1, vb2, vb3, imv1, imv2, imv3
 	pg.setConfigOptions(imageAxisOrder='row-major')	
 
 
@@ -56,22 +56,22 @@ def defineGraphicsLayout():
 	# - vb1: IR image
 	# - vb2: Temperature gradient
 	# - vb3: Isocurves
-	win2 = pg.GraphicsLayout()
-	win2.resize(900,350)
+	graphLayout = pg.GraphicsLayout()
+	graphLayout.resize(900,350)
 
-	vb = win2.addViewBox()
-	vb2 = win2.addViewBox()
-	vb3 = win2.addViewBox()
+	vb1 = graphLayout.addViewBox()
+	vb2 = graphLayout.addViewBox()
+	vb3 = graphLayout.addViewBox()
 
-	ui.graphicsView.setCentralItem(win2)
+	ui.graphicsView.setCentralItem(graphLayout)
 	ui.graphicsView.resize(400,350)
 	#TypeError: addItem(self, QGraphicsItem): argument 1 has unexpected type 'GraphicsLayoutWidget'
 
 	#ImageItem imv1 addet to ViewBox vb
-	vb.setAspectLocked()
+	vb1.setAspectLocked()
 	imv1 = pg.ImageItem()
 	imv1.setLookupTable(MyColorMaps.JetLUT, update=True)
-	vb.addItem(imv1)
+	vb1.addItem(imv1)
 
 	#ImageItem imv2 addet to ViewBox vb2
 	vb2.setAspectLocked()
