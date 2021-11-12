@@ -508,18 +508,22 @@ def CloseIsocurves(Fig):
 ##########################################################################################
 def PlotRegion(IM, level, ShowImage = 'False', AreaType='sum'):
     global figure
-    contours = np.array(measure.find_contours(IM, level), dtype="object")
-    # Display the image and plot all contours found
+
     figure, ax = plt.subplots()
+
     if ShowImage == 'True':
         ax.imshow(IM, cmap=plt.cm.gray)
 
-    if (AreaType=="sum"):
-        for n, contour in enumerate(contours):
-            ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
-    elif (AreaType=="greater"):
-        contours = contours[(SiftingArea(contours))]
-        ax.plot(contours[:, 1], contours[:, 0], linewidth=2)    
+    if ((level >= np.amin(IM)) and (level <= np.amax(IM))):
+        contours = np.array(measure.find_contours(IM, level), dtype="object")
+        # Display the image and plot all contours found
+
+        if (AreaType=="sum"):
+            for n, contour in enumerate(contours):
+                ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
+        elif (AreaType=="greater"):
+            contours = contours[(SiftingArea(contours))]
+            ax.plot(contours[:, 1], contours[:, 0], linewidth=2)    
 
     ax.axis('image')
     ax.set_xticks([])
